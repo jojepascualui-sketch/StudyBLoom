@@ -1,0 +1,19 @@
+# build output
+target/
+dist/
+.jdk/
+
+# secrets
+.env
+supabase/functions/.env
+supabase/.temp/
+
+# editors / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# vercel
+.vercel

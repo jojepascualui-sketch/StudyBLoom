@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>app.studybloom</groupId>
+  <artifactId>studybloom</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+  <name>StudyBloom</name>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <teavm.version>0.16.0</teavm.version>
+    <junit.version>5.11.4</junit.version>
+    <!-- The finished static site. Vercel serves this folder. -->
+    <site.dir>${project.basedir}/dist</site.dir>
+    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+    <build.version>${maven.build.timestamp}</build.version>
+    <!-- Public build-time config. Real values come from .env (see .env.example). -->
+    <SUPABASE_URL></SUPABASE_URL>
+    <SUPABASE_ANON_KEY></SUPABASE_ANON_KEY>
+    <STRIPE_PAYMENT_LINK_PRO></STRIPE_PAYMENT_LINK_PRO>
+    <STRIPE_PAYMENT_LINK_MAX></STRIPE_PAYMENT_LINK_MAX>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.teavm</groupId>
+      <artifactId>teavm-classlib</artifactId>
+      <version>${teavm.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.teavm</groupId>
+      <artifactId>teavm-jso</artifactId>
+      <version>${teavm.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.teavm</groupId>
+      <artifactId>teavm-jso-apis</artifactId>
+      <version>${teavm.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- 1. Read the public config (Supabase URL, anon key, Stripe payment links) from .env. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals><goal>read-project-properties</goal></goals>
+            <configuration>
+              <files><file>${project.basedir}/.env</file></files>
+              <quiet>true</quiet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 2. Copy the web shell into dist/. Only config.js and sw.js are filtered. -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-web-static</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${site.dir}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/webapp</directory>
+                  <filtering>false</filtering>
+                  <excludes>
+                    <exclude>config.js</exclude>
+                    <exclude>sw.js</exclude>
+                  </excludes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-web-filtered</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${site.dir}</outputDirectory>
+              <useDefaultDelimiters>false</useDefaultDelimiters>
+              <delimiters><delimiter>${*}</delimiter></delimiters>
+              <resources>
+                <resource>
+                  <directory>src/main/webapp</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                    <include>config.js</include>
+                    <include>sw.js</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 3. Compile the Java app to JavaScript with TeaVM into dist/js/. -->
+      <plugin>
+        <groupId>org.teavm</groupId>
+        <artifactId>teavm-maven-plugin</artifactId>
+        <version>${teavm.version}</version>
+        <executions>
+          <execution>
+            <id>web-client</id>
+            <goals><goal>compile</goal></goals>
+            <configuration>
+              <targetDirectory>${site.dir}/js</targetDirectory>
+              <targetFileName>studybloom.js</targetFileName>
+              <mainClass>app.studybloom.Main</mainClass>
+              <minifying>true</minifying>
+              <optimizationLevel>ADVANCED</optimizationLevel>
+              <debugInformationGenerated>false</debugInformationGenerated>
+              <sourceMapsGenerated>false</sourceMapsGenerated>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <filesets>
+            <fileset><directory>${site.dir}</directory></fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

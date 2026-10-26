@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>StudyBloom</title>
+  <meta name="description" content="Every assignment in one place, so nothing sneaks up on you.">
+  <meta name="theme-color" content="#F472B6">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="StudyBloom">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script>
+    // Bootstrap only (the app itself is Java compiled by TeaVM):
+    // 1. apply the saved theme before first paint, so dark mode doesn't flash;
+    // 2. catch beforeinstallprompt, which can fire before the Java app loads.
+    (function () {
+      try {
+        var t = localStorage.getItem('sb.theme');
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.classList.add('dark');
+      } catch (e) {}
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__sbInstallPrompt = e;
+        window.dispatchEvent(new Event('sb-install-available'));
+      });
+    })();
+  </script>
+  <script src="/config.js"></script>
+  <script src="/js/studybloom.js" defer></script>
+  <script>window.addEventListener('DOMContentLoaded', function () { main([]); });</script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app" class="app">
+    <div class="boot" role="status">
+      <svg width="72" height="72" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50 50)">
+        <ellipse rx="15" ry="26" cy="-22" fill="#F472B6"/>
+        <ellipse rx="15" ry="26" cy="-22" fill="#F9A8D4" transform="rotate(72)"/>
+        <ellipse rx="15" ry="26" cy="-22" fill="#F472B6" transform="rotate(144)"/>
+        <ellipse rx="15" ry="26" cy="-22" fill="#F9A8D4" transform="rotate(216)"/>
+        <ellipse rx="15" ry="26" cy="-22" fill="#F472B6" transform="rotate(288)"/>
+        <circle r="13" fill="#BE185D"/><circle r="6" fill="#FFF0F5"/></g></svg>
+      <p>Opening StudyBloom&hellip;</p>
+    </div>
+    <noscript><p class="boot">StudyBloom needs JavaScript turned on.</p></noscript>
+  </div>
+</body>
+</html>
